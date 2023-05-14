@@ -19,7 +19,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         // 从请求中获取会话
         HttpSession session = request.getSession();
         // 获取用户属性
-        User user = (User) session.getAttribute("user");
+        UserDTO user = (UserDTO) session.getAttribute("user");
         if (user == null) {
             // 用户不存在则进行拦截，返回401未授权错误码
             log.info("用户不存在");
