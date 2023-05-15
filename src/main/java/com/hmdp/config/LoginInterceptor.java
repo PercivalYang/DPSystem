@@ -16,17 +16,21 @@ public class LoginInterceptor implements HandlerInterceptor {
     // 登陆前验证用户是否存在
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 从请求中获取会话
-        HttpSession session = request.getSession();
-        // 获取用户属性
-        UserDTO user = (UserDTO) session.getAttribute("user");
-        if (user == null) {
-            // 用户不存在则进行拦截，返回401未授权错误码
-            log.info("用户不存在");
-            response.setStatus(401);
+//        // 从请求中获取会话
+//        HttpSession session = request.getSession();
+//        // 获取用户属性
+//        UserDTO user = (UserDTO) session.getAttribute("user");
+//        if (user == null) {
+//            // 用户不存在则进行拦截，返回401未授权错误码
+//            log.info("用户不存在");
+//            response.setStatus(401);
+//            return false;
+//        }
+//        UserHolder.saveUser(user);
+        if (UserHolder.getUser()==null) {
+            // 从ThreadLocal中获取用户信息，如果没有则进行拦截
             return false;
         }
-        UserHolder.saveUser(user);
         return true;
     }
 
