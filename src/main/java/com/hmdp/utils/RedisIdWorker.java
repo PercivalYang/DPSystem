@@ -10,6 +10,11 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 public class RedisIdWorker {
+    /*
+        用于创建订单的唯一Id，以64位的Long型记录id
+        其中高32位中第一位是符号位，后31位是时间戳
+        低32位利用Redis的自增长生成序列号
+     */
     private static final long BEGIN_TIMESTAMP = 1684938541L;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -27,7 +32,6 @@ public class RedisIdWorker {
         // 2. 自增长
         Long count = stringRedisTemplate.opsForValue().increment("icr:" + keyPrefix + ":" + date);
 
-        //
         return timestamp << COUNT_BITS | count;
     }
 
