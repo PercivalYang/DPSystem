@@ -35,14 +35,12 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         String token = request.getHeader("authorization");
         // 判断token是否存在，不存在则放行
         if (StrUtil.isBlank(token)) {
-            log.debug("token不存在，放行...");
             return true;
         }
         // 根据token从redis数据库中获取用户信息，如果不存在则放行
         String tokenKey = LOGIN_USER_KEY + token;
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
         if (userMap.isEmpty()) {
-            log.debug("用户不存在，放行...");
             return true;
         }
         // 将查询到的userMap转换为实体类
@@ -51,7 +49,6 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         UserHolder.saveUser(userDTO);
         // 刷新token的过期时间
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
-        log.debug("刷新token过期时间，放行...");
         return true;
     }
 }

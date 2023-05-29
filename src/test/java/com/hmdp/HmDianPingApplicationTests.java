@@ -3,6 +3,7 @@ package com.hmdp;
 import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.User;
 import com.hmdp.service.impl.UserServiceImpl;
+import com.hmdp.service.impl.VoucherOrderServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -25,6 +26,8 @@ public class HmDianPingApplicationTests {
     UserServiceImpl userService;
     @Resource
     RedisIdWorker redisIdWorker;
+    @Resource
+    VoucherOrderServiceImpl voucherOrderService;
     private final ExecutorService es = Executors.newFixedThreadPool(10);
 
     @Test
@@ -49,5 +52,15 @@ public class HmDianPingApplicationTests {
         }
         LocalDateTime end = LocalDateTime.now();
         latch.await();
+    }
+
+    @Test
+    public void addSekillVoucherOder() {
+        Runnable task = () -> {
+            voucherOrderService.seckillVoucher(10L);
+        };
+        for (int i = 0; i < 10; i++) {
+            es.execute(task);
+        }
     }
 }
