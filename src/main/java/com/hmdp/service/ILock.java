@@ -14,5 +14,5 @@ public interface ILock {
      *
      * @return 是否解锁成功
      */
-    boolean unlock();
+    void unlock();
 }
