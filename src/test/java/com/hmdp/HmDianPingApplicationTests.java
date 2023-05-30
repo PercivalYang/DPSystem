@@ -14,6 +14,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +24,8 @@ import java.util.concurrent.Executors;
 @SpringBootTest
 @Slf4j
 public class HmDianPingApplicationTests {
+    private static final Long name = Thread.currentThread().getId();
+    private static final String LOCK_PREFIX = "lock:";
     @Resource
     UserServiceImpl userService;
     @Resource
@@ -62,5 +66,11 @@ public class HmDianPingApplicationTests {
         for (int i = 0; i < 10; i++) {
             es.execute(task);
         }
+    }
+
+    @Test
+    public void testSingleTask() {
+        List<String> strings = Collections.singletonList(LOCK_PREFIX + name);
+        System.out.println(strings);
     }
 }

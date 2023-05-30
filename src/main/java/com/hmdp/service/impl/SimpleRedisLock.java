@@ -2,20 +2,31 @@ package com.hmdp.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.hmdp.service.ILock;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class SimpleRedisLock implements ILock {
 
-    StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
+    private static final DefaultRedisScript<Long> UNLOCK_SCRIPT;
     private static final String LOCK_PREFIX = "lock:";
     // UUID的作用是集成环境下，多个JVM可能会产生相同的线程ID
     // UUID避免只用线程ID时导致误删的情况
     private static final String ID_PREFIX = UUID.randomUUID().toString() + "-";
     private String name;
     private String value;
+
+    static {
+        UNLOCK_SCRIPT = new DefaultRedisScript<>();
+        UNLOCK_SCRIPT.setLocation(new ClassPathResource("unlock.lua"));
+        UNLOCK_SCRIPT.setResultType(Long.class);
+    }
+
 
     public SimpleRedisLock(String name, StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
@@ -32,8 +43,10 @@ public class SimpleRedisLock implements ILock {
 
     @Override
     public void unlock() {
-        String s = stringRedisTemplate.opsForValue().get(LOCK_PREFIX + name);
-        if (s.equals(value))
-            stringRedisTemplate.delete(LOCK_PREFIX + name);
+        stringRedisTemplate.execute(
+                UNLOCK_SCRIPT,
+                Collections.singletonList(LOCK_PREFIX + name),
+                ID_PREFIX + Thread.currentThread().getId()
+        );
     }
 }
