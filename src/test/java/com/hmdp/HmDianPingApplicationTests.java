@@ -8,6 +8,8 @@ import com.hmdp.utils.RedisIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -19,11 +21,14 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
 @Slf4j
 public class HmDianPingApplicationTests {
+    @Resource
+    private RedissonClient redissonClient;
     private static final Long name = Thread.currentThread().getId();
     private static final String LOCK_PREFIX = "lock:";
     @Resource
@@ -72,5 +77,18 @@ public class HmDianPingApplicationTests {
     public void testSingleTask() {
         List<String> strings = Collections.singletonList(LOCK_PREFIX + name);
         System.out.println(strings);
+    }
+
+    @Test
+    public void testRedisson() throws InterruptedException {
+        RLock lock = redissonClient.getLock("anyLock");
+        boolean isLock = lock.tryLock(1, 10, TimeUnit.SECONDS);
+        if (isLock) {
+            try {
+                System.out.println("获取锁成功");
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 }
